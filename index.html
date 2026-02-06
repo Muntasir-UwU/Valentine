@@ -1,11 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>WebGL Test</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>3D Rose Loader</title>
 
 <script src="https://unpkg.com/three@0.158.0/build/three.min.js"></script>
+<script src="https://unpkg.com/three@0.158.0/examples/js/loaders/GLTFLoader.js"></script>
 
 <style>
 html, body {
@@ -19,44 +20,77 @@ canvas { display: block; }
 </head>
 
 <body>
+
 <script>
-let renderer;
+/* ===== SCENE ===== */
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x000000);
 
-try {
-  const scene = new THREE.Scene();
-  scene.background = new THREE.Color(0x111111);
+/* ===== CAMERA ===== */
+const camera = new THREE.PerspectiveCamera(45, innerWidth / innerHeight, 0.1, 100);
+camera.position.set(0, 0, 4);
 
-  const camera = new THREE.PerspectiveCamera(
-    75,
-    window.innerWidth / window.innerHeight,
-    0.1,
-    100
-  );
-  camera.position.z = 3;
+/* ===== RENDERER ===== */
+const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+renderer.setSize(innerWidth, innerHeight);
+renderer.setPixelRatio(window.devicePixelRatio);
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+document.body.appendChild(renderer.domElement);
 
-  renderer = new THREE.WebGLRenderer({ antialias: true });
-  renderer.setSize(window.innerWidth, window.innerHeight);
-  document.body.appendChild(renderer.domElement);
+/* ===== LIGHTS ===== */
+scene.add(new THREE.AmbientLight(0xffffff, 1.5));
 
-  const cube = new THREE.Mesh(
-    new THREE.BoxGeometry(1, 1, 1),
-    new THREE.MeshBasicMaterial({ color: 0xff0000 })
-  );
-  scene.add(cube);
+const key = new THREE.DirectionalLight(0xffffff, 2);
+key.position.set(5, 5, 5);
+scene.add(key);
 
-  function animate() {
-    requestAnimationFrame(animate);
-    cube.rotation.x += 0.01;
-    cube.rotation.y += 0.01;
-    renderer.render(scene, camera);
+const fill = new THREE.DirectionalLight(0xffffff, 1);
+fill.position.set(-5, 2, 5);
+scene.add(fill);
+
+/* ===== LOAD GLB ===== */
+let model;
+const loader = new THREE.GLTFLoader();
+
+loader.load(
+  "./rose_3d.glb",   // Make sure this file is in the root
+  (gltf) => {
+    model = gltf.scene;
+
+    // Auto-center + scale
+    const box = new THREE.Box3().setFromObject(model);
+    const size = box.getSize(new THREE.Vector3()).length();
+    const center = box.getCenter(new THREE.Vector3());
+
+    model.position.sub(center);       // Center the model
+    const scale = 2 / size;
+    model.scale.setScalar(scale);
+
+    scene.add(model);
+    console.log("✅ GLB loaded successfully");
+  },
+  undefined,
+  (error) => {
+    console.error("❌ GLB load error:", error);
   }
+);
 
-  animate();
-} catch (e) {
-  document.body.innerHTML =
-    "<h2 style='color:white'>WebGL failed</h2>";
-  console.error(e);
+/* ===== ANIMATION LOOP ===== */
+function animate() {
+  requestAnimationFrame(animate);
+  if (model) model.rotation.y += 0.01;  // Auto-spin
+  renderer.render(scene, camera);
 }
+animate();
+
+/* ===== HANDLE RESIZE ===== */
+window.addEventListener("resize", () => {
+  camera.aspect = innerWidth / innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight);
+});
 </script>
+
 </body>
 </html>

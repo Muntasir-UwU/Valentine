@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>3D Rose Loader</title>
 
+<!-- Three.js and GLTFLoader -->
 <script src="https://unpkg.com/three@0.158.0/build/three.min.js"></script>
 <script src="https://unpkg.com/three@0.158.0/examples/js/loaders/GLTFLoader.js"></script>
 
@@ -22,73 +23,79 @@ canvas { display: block; }
 <body>
 
 <script>
-/* ===== SCENE ===== */
+/* ============================
+   SCENE SETUP
+============================ */
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x000000);
 
-/* ===== CAMERA ===== */
-const camera = new THREE.PerspectiveCamera(45, innerWidth / innerHeight, 0.1, 100);
+/* CAMERA */
+const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 100);
 camera.position.set(0, 0, 4);
 
-/* ===== RENDERER ===== */
+/* RENDERER */
 const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-renderer.setSize(innerWidth, innerHeight);
+renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.setPixelRatio(window.devicePixelRatio);
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
 document.body.appendChild(renderer.domElement);
 
-/* ===== LIGHTS ===== */
+/* LIGHTS */
 scene.add(new THREE.AmbientLight(0xffffff, 1.5));
 
-const key = new THREE.DirectionalLight(0xffffff, 2);
-key.position.set(5, 5, 5);
-scene.add(key);
+const keyLight = new THREE.DirectionalLight(0xffffff, 2);
+keyLight.position.set(5,5,5);
+scene.add(keyLight);
 
-const fill = new THREE.DirectionalLight(0xffffff, 1);
-fill.position.set(-5, 2, 5);
-scene.add(fill);
+const fillLight = new THREE.DirectionalLight(0xffffff, 1);
+fillLight.position.set(-5,2,5);
+scene.add(fillLight);
 
-/* ===== LOAD GLB ===== */
+/* ============================
+   LOAD GLB MODEL
+============================ */
 let model;
 const loader = new THREE.GLTFLoader();
 
 loader.load(
-  "./rose_3d.glb",   // Make sure this file is in the root
+  "./rose_3d.glb",   // Make sure the file is in the root
   (gltf) => {
     model = gltf.scene;
 
-    // Auto-center + scale
+    // Force center + visibility
     const box = new THREE.Box3().setFromObject(model);
     const size = box.getSize(new THREE.Vector3()).length();
     const center = box.getCenter(new THREE.Vector3());
 
-    model.position.sub(center);       // Center the model
-    const scale = 2 / size;
+    model.position.sub(center);        // Center the model
+    const scale = 2 / size;            // Scale to fit view
     model.scale.setScalar(scale);
 
     scene.add(model);
-    console.log("✅ GLB loaded successfully");
+    console.log("✅ GLB loaded and visible");
   },
   undefined,
-  (error) => {
-    console.error("❌ GLB load error:", error);
-  }
+  (error) => console.error("❌ GLB load error:", error)
 );
 
-/* ===== ANIMATION LOOP ===== */
+/* ============================
+   ANIMATION LOOP
+============================ */
 function animate() {
   requestAnimationFrame(animate);
-  if (model) model.rotation.y += 0.01;  // Auto-spin
+  if (model) model.rotation.y += 0.01; // Auto spin
   renderer.render(scene, camera);
 }
 animate();
 
-/* ===== HANDLE RESIZE ===== */
+/* ============================
+   HANDLE WINDOW RESIZE
+============================ */
 window.addEventListener("resize", () => {
-  camera.aspect = innerWidth / innerHeight;
+  camera.aspect = window.innerWidth / window.innerHeight;
   camera.updateProjectionMatrix();
-  renderer.setSize(innerWidth, innerHeight);
+  renderer.setSize(window.innerWidth, window.innerHeight);
 });
 </script>
 

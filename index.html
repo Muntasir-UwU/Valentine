@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rose Day</title>
+    <title>Valentine Rose Reveal</title>
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
     <script src="https://unpkg.com/lenis@1.1.18/dist/lenis.min.js"></script>
@@ -25,6 +26,7 @@
         .lenis.lenis-smooth { scroll-behavior: auto !important; }
         .lenis.lenis-smooth [data-lenis-prevent] { overscroll-behavior: contain; }
         .lenis.lenis-stopped { overflow: hidden; }
+        .lenis.lenis-scrolling iframe { pointer-events: none; }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -79,8 +81,6 @@
             color: rgba(255, 255, 255, 0.15); text-align: left;
         }
         .word { position: relative; display: inline-block; margin-right: 0.25em; }
-        
-        /* FIXED: Added var() here */
         .marker {
             position: absolute; bottom: 0.1em; left: 0; width: 0%; height: 0.4em;
             background: var(--brush-color); z-index: -1; border-radius: 4px; opacity: 0.9;
@@ -134,7 +134,7 @@
 
     <section id="reveal-section">
         <div class="reveal-text-container" id="reveal-text">
-            I haven't known you for long, but seen enough to know you're special. I'd like to give a rose to you, will you take it? 
+i haven't known you for long, but seen enough to know you're special. I'd like to give rose to you, will you take it? 
         </div>
     </section>
 
@@ -195,8 +195,7 @@
             });
 
             const textContainer = document.getElementById('reveal-text');
-            // FIXED: Added .trim() and .filter() to prevent empty word glitches
-            const words = textContainer.innerText.trim().split(/\s+/);
+            const words = textContainer.innerText.split(' ');
             textContainer.innerHTML = '';   
             words.forEach(word => {
                 const span = document.createElement('span');
@@ -238,6 +237,7 @@
 
             scrubTl.to(".rose-bg", { opacity: 0, duration: 1 });
 
+          
             gsap.to("#final-text", {
                 scrollTrigger: {
                     trigger: "#final-section", start: "top 80%",
@@ -255,6 +255,7 @@
             });
         }
 
+        // Nav Text Rotation
         const navWords = ["Be MY Love?", "Be MY Life?", "Always Be Mine?", "Be Together?"];  
         let navIdx = 0;  
         setInterval(() => {
